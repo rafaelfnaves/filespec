@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
-require 'dotenv'
 require 'aws-sdk-s3'
+require 'dotenv'
+require 'pry'
+
+Dotenv.load
 
 client = Aws::S3::Client.new(
   access_key_id: ENV['DO_SPACES_KEY'],
@@ -10,13 +13,26 @@ client = Aws::S3::Client.new(
   force_path_style: false,
   region: ENV['DO_SPACES_REGION']
 )
-
 resource = Aws::S3::Resource.new(client: client)
-bucket = resource.bucket('db-backups-envixo')
+bucket = resource.bucket(ENV['DO_SPACES_BUCKET'])
 
-date = Date.today.to_s
-prefix = "invoice_web/2023-02-14"
+folder = "invoice_web"
+date = Time.now.strftime("%Y-%m-%d")
+prefix = "#{folder}/#{date}"
 
-bucket.objects(prefix: prefix).each do |obj|
-  puts obj.key
+begin
+  bucket.objects(prefix: prefix).each do |obj|
+    file = obj.key.gsub("#{folder}/", "")
+    client.get_object(
+      bucket: ENV['DO_SPACES_BUCKET'],
+      key: obj.key,
+      response_target: "./tmp/#{file}"
+    )
+  end
+rescue Exception => error
+  puts "Error on sync spaces => #{error.message}"
+end
+
+unless file.nil?
+  system("")
 end
