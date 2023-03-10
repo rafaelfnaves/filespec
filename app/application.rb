@@ -3,6 +3,7 @@
 require 'aws-sdk-s3'
 require 'dotenv'
 require 'pry'
+# require 'net/smtp'
 
 Dotenv.load
 
@@ -19,6 +20,7 @@ bucket = resource.bucket(ENV['DO_SPACES_BUCKET'])
 folder = "invoice_web"
 date = Time.now.strftime("%Y-%m-%d")
 prefix = "#{folder}/#{date}"
+file = ""
 
 begin
   bucket.objects(prefix: prefix).each do |obj|
@@ -34,5 +36,17 @@ rescue Exception => error
 end
 
 unless file.nil?
-  system("")
+  local_path = Dir.pwd + "/tmp"
+  project_path = ENV['PROJECT_PATH']
+  
+  # extract zip file
+  system("tar -xvzf #{local_path}/#{file}")
+
+  # Access project rails and reset db
+  system("cd #{project_path}; rails db:drop db:create")
+  # Execute backup dump to local db
+  system("psql -h localhost -p 5432 -U rafaelnaves -d invoice_web_development < db.sql")
+  # Access project rails and exec migrate and download sheet
+  system("cd #{project_path}; rails db:migrate db:download_orders")
+
 end
