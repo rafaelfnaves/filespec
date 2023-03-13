@@ -5,7 +5,11 @@ require 'dotenv'
 require 'pry'
 # require 'net/smtp'
 
+# Load Env file
 Dotenv.load
+
+# Create directory tmp
+Dir.mkdir "tmp"
 
 client = Aws::S3::Client.new(
   access_key_id: ENV['DO_SPACES_KEY'],
@@ -17,7 +21,7 @@ client = Aws::S3::Client.new(
 resource = Aws::S3::Resource.new(client: client)
 bucket = resource.bucket(ENV['DO_SPACES_BUCKET'])
 
-folder = "invoice_web"
+folder = ENV['DO_SPACES_FOLDER']
 date = Time.now.strftime("%Y-%m-%d")
 prefix = "#{folder}/#{date}"
 file = ""
