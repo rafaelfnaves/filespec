@@ -9,7 +9,7 @@ require 'pry'
 Dotenv.load
 
 # Create directory tmp
-Dir.mkdir "tmp"
+FileUtils.mkdir "tmp"
 
 client = Aws::S3::Client.new(
   access_key_id: ENV['DO_SPACES_KEY'],
@@ -42,7 +42,8 @@ end
 unless file.nil?
   local_path = Dir.pwd + "/tmp"
   project_path = ENV['PROJECT_PATH']
-  
+  filename_orders = "pedidos_#{Time.now.strftime("%d%m%Y")}"
+  filename_products = "pedidos_produtos#{Time.now.strftime("%d%m%Y")}"
   # extract zip file
   system("tar -xvzf #{local_path}/#{file}")
 
@@ -52,5 +53,9 @@ unless file.nil?
   system("psql -h localhost -p 5432 -U rafaelnaves -d invoice_web_development < db.sql")
   # Access project rails and exec migrate and download sheet
   system("cd #{project_path}; rails db:migrate db:download_orders")
+
+  # Copy files to local project folder tmp
+  FileUtils.cp("#{project_path}/#{filename_orders}", "./tmp/#{filename_orders}")
+  FileUtils.cp("#{project_path}/#{filename_products}", "./tmp/#{filename_products}")
 
 end
