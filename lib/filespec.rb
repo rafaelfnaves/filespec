@@ -42,8 +42,8 @@ end
 unless file.nil?
   local_path = Dir.pwd + "/tmp"
   project_path = ENV['PROJECT_PATH']
-  filename_orders = "pedidos_#{Time.now.strftime("%d%m%Y")}"
-  filename_products = "pedidos_produtos#{Time.now.strftime("%d%m%Y")}"
+  filename_orders = "pedidos_#{Time.now.strftime("%d%m%Y")}.xlsx"
+  filename_products = "pedidos_produtos#{Time.now.strftime("%d%m%Y")}.xlsx"
   # extract zip file
   system("tar -xvzf #{local_path}/#{file}")
 
