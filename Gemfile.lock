@@ -32,10 +32,14 @@ GEM
       method_source (~> 1.0)
     reline (0.3.2)
       io-console (~> 0.5)
+    ruby_http_client (3.5.5)
     rubyzip (2.3.2)
+    sendgrid-ruby (6.6.2)
+      ruby_http_client (~> 3.4)
 
 PLATFORMS
   x86_64-darwin-19
+  x86_64-darwin-21
   x86_64-linux
 
 DEPENDENCIES
@@ -44,6 +48,7 @@ DEPENDENCIES
   dotenv
   pry
   rubyzip
+  sendgrid-ruby
   tzinfo-data
 
 RUBY VERSION

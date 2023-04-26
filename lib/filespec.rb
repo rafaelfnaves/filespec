@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
 require 'aws-sdk-s3'
-require 'dotenv'
 require 'pry'
-# require 'net/smtp'
+require 'dotenv'
+require 'mail'
+require 'sendgrid-ruby'
+
+include SendGrid
 
 # Load Env file
 Dotenv.load
@@ -39,6 +42,40 @@ rescue Exception => error
   puts "Error on sync spaces => #{error.message}"
 end
 
+# Mail.defaults do
+#   delivery_method :smtp, { 
+#     address:              'smtp.sendgrid.net',
+#     port:                 587,
+#     domain:               ENV['DOMAIN_SMTP'],
+#     user_name:            'apikey',
+#     password:             ENV['SENDGRID_API_KEY'],
+#     authentication:       'plain',
+#     enable_starttls_auto: true,
+#     open_timeout: 600,
+#     read_timeout: 600
+#   }
+# end
+
+# Create a new Mail object
+mail = Mail.new do
+  from     ENV['USER_SMTP']
+  to       'rafael@envixo.com'
+  subject  'Planilhas de Pedidos'
+  body     "Bom dia pessoal, tudo bem? \n
+            Segue as planilhas atualizadas. \n
+            Att.,"
+
+  add_file filename: filename, content: File.read(file)
+end
+
+# Send Mail object with SENDGRID
+
+sg = SendGrid::API.new(api_key: ENV['SENDGRID_API_KEY'])
+response = sg.client.mail._('send').post(request_body: mail.to_json)
+puts response.status_code
+puts response.body
+puts response.headers
+
 unless file.nil?
   local_path = Dir.pwd + "/tmp"
   project_path = ENV['PROJECT_PATH']
@@ -57,5 +94,7 @@ unless file.nil?
   # Copy files to local project folder tmp
   FileUtils.cp("#{project_path}/#{filename_orders}", "./tmp/#{filename_orders}")
   FileUtils.cp("#{project_path}/#{filename_products}", "./tmp/#{filename_products}")
+
+  send_mail(filename_orders, filename_products)
 
 end
